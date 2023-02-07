@@ -6,10 +6,10 @@ import plotly.io as pio
 
 pio.templates.default = "plotly_white"
 
-def classify(x):
-    if x.is_significant and x.log_fold_change > 0:
+def classify(x, lfc: str):
+    if x.is_significant and x[lfc]> 0:
         return "Enriched"
-    elif x.is_significant and x.log_fold_change < 0:
+    elif x.is_significant and x[lfc]< 0:
         return "Depleted"
     else:
         return "Not significant"
@@ -44,7 +44,7 @@ class VisualizeGenes:
     def plot_volcano(self, output: str = "volcano.html"):
         self.df[f"log_{self.pval_column}"] = -np.log10(self.df[self.pval_column])
         self.df["is_significant"] = self.df[self.threshold_column] < self.threshold
-        self.df["classification"] = self.df.apply(lambda x: classify(x), axis=1)
+        self.df["classification"] = self.df.apply(lambda x: classify(x, self.fc_column), axis=1)
         self.df["sizing"] = self.df.is_significant.apply(lambda x: 10 if x else 5)
         
         xmax = self.df[self.fc_column].abs().max()
