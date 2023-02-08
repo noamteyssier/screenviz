@@ -47,6 +47,7 @@ def get_args() -> argparse.Namespace:
     parser_geneviz.add_argument(
             "-th",
             "--threshold",
+            type=float,
             help="Threshold value (default = 0.1)",
             required=False,
             default=0.1)
@@ -97,6 +98,7 @@ def get_args() -> argparse.Namespace:
     parser_sgrnaviz.add_argument(
             "-th",
             "--threshold",
+            type=float,
             help="Threshold value (default = 0.1)",
             required=False,
             default=0.1)
@@ -139,6 +141,7 @@ def get_args() -> argparse.Namespace:
     parser_compare_gene.add_argument(
             "-th",
             "--threshold",
+            type=float,
             help="Threshold value (default = 0.1)",
             required=False,
             default=0.1)
