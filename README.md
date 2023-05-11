@@ -18,11 +18,18 @@ To explore the gene-level enrichment of your analysis - specifically the classic
 you can use the `screenviz gene` subcommand:
 
 ```bash
-screenviz gene -i results.gene_results.tab
+screenviz gene -i results.gene_results.tsv
 ```
 
 If your screen result is an output of `crispr_screen`, the defaults of the program will immediately generate a visualization which will be written to an `*.html` file
 on your computer. You can open this file in your favorite browser and explore the results interactively there.
+
+For a better visualization, pass in the `.yaml` configuration file produced from your `crispr_screen` run.
+This will automatically determine if `RRA` or `INC` was used and show appropriate thresholds.
+
+``` bash
+screenviz gene -i results.gene_results.tsv -c results.screenviz.yaml
+```
 
 If your screen result is an output of a different program, you will need to tell `screenviz` what the names of the columns in your data represent.
 
@@ -58,7 +65,7 @@ To explore the sgrna-level enrichment of your analysis - specifically the classi
 you can use the `screenviz sgrna` subcommand:
 
 ```bash
-screenviz sgrna -i results.sgrna_results.tab
+screenviz sgrna -i results.sgrna_results.tsv
 ```
 
 If your screen result is an output of `crispr_screen`, the defaults of the program will immediately generate a visualization which will be written to an `*.html` file
@@ -95,7 +102,7 @@ To compare between `crispr_screen` and `MAGeCK` one can do:
 
 # compare depleted genes
 screenviz compare \
-    -i results.gene_results.tab \
+    -i results.gene_results.tsv \
     -I sample1.gene_summary.txt \
     -x fdr_low \
     -X "neg|fdr" \
@@ -106,7 +113,7 @@ screenviz compare \
 
 # compare enriched genes
 screenviz compare \
-    -i results.gene_results.tab \
+    -i results.gene_results.tsv \
     -I sample1.gene_summary.txt \
     -x fdr_high \
     -X "pos|fdr" \
