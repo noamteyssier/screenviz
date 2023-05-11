@@ -1,0 +1,9 @@
+screenviz:
+   method: inc-pvalue
+   threshold_low: 0.00082
+   threshold_high: 0.00072
+   x: log_fold_change
+   y: pvalue
+   z: pvalue
+   gene: gene
+   ntc-token: pseudogene
