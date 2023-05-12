@@ -6,4 +6,4 @@ screenviz:
    y: pvalue
    z: pvalue
    gene: gene
-   ntc-token: pseudogene
+   ntc_token: pseudogene

@@ -6,4 +6,4 @@ screenviz:
   y: pvalue
   z: phenotype_score
   gene: gene
-  ntc-token: pseudogene
+  ntc_token: pseudogene
