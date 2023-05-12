@@ -8,7 +8,7 @@ import plotly.io as pio
 
 pio.templates.default = "plotly_white"
 
-def classify(x, lfc: str, ntc: None):
+def classify(x, lfc: str, ntc: Optional[str] = None):
     if ntc and ntc in x.gene:
         return "NTC"
     elif x.is_significant and x[lfc]> 0:
@@ -89,8 +89,8 @@ class VisualizeGenes:
                 self.threshold_low = y["threshold_low"]
                 self.threshold_high = y["threshold_high"]
 
-            if "ntc-token" in y:
-                self.ntc_token = y["ntc-token"]
+            if "ntc_token" in y:
+                self.ntc_token = y["ntc_token"]
             else:
                 self.ntc_token = None
 
