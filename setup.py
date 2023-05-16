@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="screenviz",
-    version="0.0.3",
+    version="0.0.4",
     author="Noam Teysser",
     author_email="Noam.Teyssier@ucsf.edu",
     packages=["screenviz"],

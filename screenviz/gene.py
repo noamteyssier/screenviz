@@ -26,7 +26,7 @@ def signify(
         threshold_low: Optional[float] = None, 
         threshold_high: Optional[float] = None, 
         method: Optional[str] = None):
-    if threshold_low and threshold_high and method:
+    if threshold_low is not None and threshold_high is not None and method is not None:
         if method == "inc-product":
             return x[threshold_column] < threshold_low or x[threshold_column] > threshold_high
         elif method == "inc-pvalue":
