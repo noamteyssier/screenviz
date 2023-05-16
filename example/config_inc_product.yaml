@@ -1,9 +1,8 @@
-screenviz:
-  method: inc-product
-  threshold_low: -2.01567
-  threshold_high: 1.3767
-  x: log_fold_change
-  y: pvalue
-  z: phenotype_score
-  gene: gene
-  ntc_token: pseudogene
+method: inc-product
+threshold_low: -2.01567
+threshold_high: 1.3767
+x: log_fold_change
+y: pvalue
+z: phenotype_score
+gene: gene
+ntc_token: pseudogene

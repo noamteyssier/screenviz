@@ -1,7 +1,6 @@
-screenviz:
-  method: rra
-  threshold: 0.05
-  x: log_fold_change
-  y: pvalue
-  z: fdr
-  gene: gene
+method: rra
+threshold: 0.05
+x: log_fold_change
+y: pvalue
+z: fdr
+gene: gene
