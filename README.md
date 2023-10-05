@@ -5,7 +5,7 @@ A CRISPR screen visualization toolkit.
 ## Installation
 
 ```bash
-pip install git+https://github.com/noamteyssier/screenviz
+pip install screenviz
 ```
 
 ## Usage
