@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "screenviz"
+version = "0.1.0"
+description = "A tool to visualize the results of 1D CRISPR screens"
+authors = ["noam teyssier <22600644+noamteyssier@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.21.0"
+pandas = "^1.4.0"
+plotly = "^5.17.0"
+PyYAML = "^6.0.1"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.9.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+screenviz = "screenviz.__main__:main_cli"
