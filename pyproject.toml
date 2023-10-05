@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "screenviz"
-version = "0.1.0"
+version = "0.1.1"
 description = "A tool to visualize the results of 1D CRISPR screens"
 authors = ["noam teyssier <22600644+noamteyssier@users.noreply.github.com>"]
 license = "MIT"
