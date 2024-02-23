@@ -2,12 +2,10 @@ import argparse
 from screenviz.gene import VisualizeGenes
 from screenviz.sgrna import VisualizeSGRNAs
 from screenviz.compare import CompareScreens
+from screenviz.idea import RunIDEA
 
 
-def get_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    subparser = parser.add_subparsers(dest="subcommand", required=True)
-
+def geneviz_parser(subparser):
     # create the parser for the "geneviz" command
     parser_geneviz = subparser.add_parser(
         "gene", help="Visualize the volcano plot of the gene enrichment analysis"
@@ -63,6 +61,8 @@ def get_args() -> argparse.Namespace:
         default=0.1,
     )
 
+
+def sgrnaviz_parser(subparser):
     # create the parser for the "sgrnaviz" command
     parser_sgrnaviz = subparser.add_parser(
         "sgrna", help="Visualize the volcano plot of the sgRNA enrichment analysis"
@@ -119,6 +119,8 @@ def get_args() -> argparse.Namespace:
         default=0.1,
     )
 
+
+def compare_parser(subparser):
     parser_compare_gene = subparser.add_parser(
         "compare",
         help="Compare the gene enrichments between two analyses of the same screen",
@@ -194,6 +196,86 @@ def get_args() -> argparse.Namespace:
         action="store_false",
     )
 
+
+def idea_parser(subparser):
+    # create the parser for the "geneviz" command
+    parser_idea = subparser.add_parser(
+        "idea",
+        help="Perform Gene Set Enrichment using Enrichr and visualize as an IDEA plot",
+    )
+    parser_idea.add_argument("-i", "--input", help="Input file", required=True)
+    parser_idea.add_argument(
+        "-o",
+        "--output",
+        help="Output file (default = '<prefix>.<geneset>.html')",
+        required=False,
+        default="network",
+    )
+    parser_idea.add_argument(
+        "-s",
+        "--geneset",
+        help="Gene set to perform enrichment against (BP, MF, CC, or any name in Enrichr)",
+        required=False,
+        default="BP",
+    )
+    parser_idea.add_argument(
+        "-g",
+        "--gene_column",
+        help="Column name of gene names (default = 'gene')",
+        required=False,
+        default="gene",
+    )
+    parser_idea.add_argument(
+        "-f",
+        "--fc_column",
+        help="Column name of fold change values (default = 'log_fold_change')",
+        required=False,
+        default="log_fold_change",
+    )
+    parser_idea.add_argument(
+        "-p",
+        "--pval_column",
+        help="Column name of score column (default = 'fdr')",
+        required=False,
+        default="fdr",
+    )
+    parser_idea.add_argument(
+        "-t",
+        "--threshold_column",
+        help="Column name of threshold column (default = 'fdr')",
+        required=False,
+        default="fdr",
+    )
+    parser_idea.add_argument(
+        "-th",
+        "--threshold",
+        type=float,
+        help="Threshold value (default = 0.1)",
+        required=False,
+        default=0.1,
+    )
+    parser_idea.add_argument(
+        "--sided",
+        type=str,
+        help="One-sided enrichment, choose either 'up' or 'down'",
+        required=False,
+    )
+    parser_idea.add_argument(
+        "--top",
+        type=int,
+        help="Number of top terms to show (default = 30)",
+        required=False,
+        default=30,
+    )
+
+
+def get_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    subparser = parser.add_subparsers(dest="subcommand", required=True)
+    geneviz_parser(subparser)
+    sgrnaviz_parser(subparser)
+    compare_parser(subparser)
+    idea_parser(subparser)
     return parser.parse_args()
 
 
@@ -236,6 +318,19 @@ def main_cli():
             log_transform_b=~args.no_log_transform_b,
         )
         cs.plot_volcano()
+    elif args.subcommand == "idea":
+        RunIDEA(
+            filename=args.input,
+            geneset=args.geneset,
+            output=args.output,
+            gene_column=args.gene_column,
+            fc_column=args.fc_column,
+            pval_column=args.pval_column,
+            threshold_column=args.threshold_column,
+            threshold=args.threshold,
+            sided=args.sided,
+            top=args.top,
+        )
 
 
 if __name__ == "__main__":
