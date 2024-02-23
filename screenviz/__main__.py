@@ -1,4 +1,5 @@
 import argparse
+import re
 from screenviz.gene import VisualizeGenes
 from screenviz.sgrna import VisualizeSGRNAs
 from screenviz.compare import CompareScreens
@@ -250,7 +251,15 @@ def idea_parser(subparser):
         "-th",
         "--threshold",
         type=float,
-        help="Threshold value (default = 0.1)",
+        help="Threshold value (default = 0.1) to use for differentially expressed genes",
+        required=False,
+        default=0.1,
+    )
+    parser_idea.add_argument(
+        "-tth",
+        "--term_threshold",
+        type=float,
+        help="Threshold value (default = 0.1) to use for enriched terms",
         required=False,
         default=0.1,
     )
@@ -266,6 +275,31 @@ def idea_parser(subparser):
         help="Number of top terms to show (default = 30)",
         required=False,
         default=30,
+    )
+    parser_idea.add_argument(
+        "--term_palette",
+        type=str,
+        help="Color palette for term nodes",
+        required=False,
+        default="Greens",
+    )
+    parser_idea.add_argument(
+        "--gene_palette",
+        type=str,
+        help="Color palette for gene nodes",
+        required=False,
+    )
+    parser_idea.add_argument(
+        "--up_color",
+        type=str,
+        help="Color palette for up-regulated genes",
+        required=False,
+    )
+    parser_idea.add_argument(
+        "--down_color",
+        type=str,
+        help="Color palette for down-regulated genes",
+        required=False,
     )
 
 
@@ -330,6 +364,11 @@ def main_cli():
             threshold=args.threshold,
             sided=args.sided,
             top=args.top,
+            gene_palette=args.gene_palette,
+            term_palette=args.term_palette,
+            up_color=args.up_color,
+            down_color=args.down_color,
+            term_threshold=args.term_threshold,
         )
 
 

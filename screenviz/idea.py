@@ -1,6 +1,5 @@
 import sys
 from typing import Optional
-import numpy as np
 import pandas as pd
 from idea import run_gsea, IDEA
 
@@ -14,8 +13,13 @@ def RunIDEA(
     pval_column: str,
     threshold_column: str,
     threshold: float,
+    term_threshold: float,
     sided: Optional[str],
     top: int,
+    gene_palette: Optional[str] = None,
+    term_palette: Optional[str] = None,
+    up_color: Optional[str] = "Reds",
+    down_color: Optional[str] = "Blues",
 ):
     """Run IDEA analysis."""
     frame = pd.read_csv(filename, sep="\t")
@@ -25,16 +29,16 @@ def RunIDEA(
     if sided:
         if sided == "up":
             sig = sig[sig[fc_column] > 0]
-            palette = "Reds"
+            gene_palette = up_color
         elif sided == "down":
             sig = sig[sig[fc_column] < 0]
             sig[fc_column] = -sig[fc_column]
-            palette = "Blues"
-    else:
-        palette = None
+            gene_palette = down_color
 
     gsea = run_gsea(
-        sig[gene_column].values, geneset, background=frame[gene_column].values
+        genes=sig[gene_column].values,
+        library=geneset,
+        background=frame[gene_column].values,
     )
     if gsea.shape[0] == 0:
         sys.exit(f"No gene sets were enriched for provided geneset: {geneset}")
@@ -42,7 +46,7 @@ def RunIDEA(
         sig,
         gsea.head(top),
         deg_color_name=fc_column,
-        gene_palette=palette,
-        term_palette="Greens",
+        gene_palette=gene_palette,
+        term_palette=term_palette,
     )
     idea.visualize(f"{output}.{geneset}.html")
