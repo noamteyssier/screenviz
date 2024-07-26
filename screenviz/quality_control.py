@@ -15,9 +15,7 @@ class CRISPRQCDashApp:
     SELECTED_OPACITY = 1.0
     UNSELECTED_OPACITY = 0.25
 
-    def __init__(
-        self, filename: str, guide_column: str, gene_column: str, log_transform=True
-    ):
+    def __init__(self, filename: str, guide_column: str, gene_column: str):
         self.app = dash.Dash(__name__)
         self.df = pd.read_csv(filename, sep="\t")
 
@@ -28,12 +26,12 @@ class CRISPRQCDashApp:
         ]
         self.gene_list = sorted(self.df[gene_column].unique())
 
-        # Log-transform the data
-        if log_transform:
-            self.df[self.sample_columns] = self.log_transform(
-                self.df[self.sample_columns]
-            )
-        self.log_transform = log_transform
+        # Store both normal and log-transformed data
+        self.df_normal = self.df.copy()
+        self.df_log = self.df.copy()
+        self.df_log[self.sample_columns] = self.log_transform(
+            self.df_log[self.sample_columns]
+        )
 
         self.app.layout = self.create_layout()
         self.register_callbacks()
@@ -49,7 +47,7 @@ class CRISPRQCDashApp:
                 html.H1("CRISPR Screen Quality Control Visualization Suite"),
                 html.Div(
                     [
-                        # Left panel: Scatter plot
+                        # Left panel: Scatter plot and controls
                         html.Div(
                             [
                                 html.Label("Select X-axis Sample:"),
@@ -61,6 +59,7 @@ class CRISPRQCDashApp:
                                     ],
                                     value=self.sample_columns[0],
                                 ),
+                                html.Br(),
                                 html.Label("Select Y-axis Sample:"),
                                 dcc.Dropdown(
                                     id="y-axis-dropdown",
@@ -72,6 +71,7 @@ class CRISPRQCDashApp:
                                     if len(self.sample_columns) > 1
                                     else self.sample_columns[0],
                                 ),
+                                html.Br(),
                                 html.Label("Highlight Gene:"),
                                 dcc.Dropdown(
                                     id="gene-dropdown",
@@ -84,6 +84,18 @@ class CRISPRQCDashApp:
                                     else self.gene_list[0],
                                     placeholder="Select a gene to highlight",
                                 ),
+                                html.Br(),
+                                html.Label("Log Transform:"),
+                                dcc.Checklist(
+                                    id="log-transform-switch",
+                                    options=[{"label": "", "value": "log"}],
+                                    value=["log"],
+                                    style={
+                                        "display": "inline-block",
+                                        "margin-left": "10px",
+                                    },
+                                ),
+                                html.Br(),
                                 html.Br(),
                                 html.Label(
                                     "Scatter Plot:", style={"font-weight": "bold"}
@@ -145,20 +157,28 @@ class CRISPRQCDashApp:
         )
 
     def get_figure(
-        self, x_col, y_col, selection_range, highlighted_gene, selected_points
+        self,
+        x_col,
+        y_col,
+        selection_range,
+        highlighted_gene,
+        selected_points,
+        log_transform,
     ):
+        df = self.df_log if log_transform else self.df_normal
+
         if highlighted_gene:
             colors = [
                 "in_guide" if gene == highlighted_gene else "out_guide"
-                for gene in self.df[self.gene_column]
+                for gene in df[self.gene_column]
             ]
-            self.df["color_by_gene"] = colors
+            df["color_by_gene"] = colors
             fig = px.scatter(
-                self.df,
+                df,
                 x=x_col,
                 y=y_col,
                 hover_data=[self.guide_column, self.gene_column],
-                color=self.df["color_by_gene"],
+                color=df["color_by_gene"],
                 color_discrete_map={
                     "in_guide": self.DEFAULT_HIGHLIGHT_COLOR,
                     "out_guide": self.DEFAULT_MARKER_COLOR,
@@ -166,7 +186,7 @@ class CRISPRQCDashApp:
             )
         else:
             fig = px.scatter(
-                self.df,
+                df,
                 x=x_col,
                 y=y_col,
                 hover_data=[self.guide_column, self.gene_column],
@@ -177,10 +197,10 @@ class CRISPRQCDashApp:
                 self.SELECTED_OPACITY
                 if i in selected_points
                 else self.UNSELECTED_OPACITY
-                for i in range(len(self.df))
+                for i in range(len(df))
             ]
         else:
-            opacity_list = [self.DEFAULT_OPACITY] * len(self.df)
+            opacity_list = [self.DEFAULT_OPACITY] * len(df)
 
         if highlighted_gene:
             fig.update_traces(
@@ -217,8 +237,8 @@ class CRISPRQCDashApp:
             )
 
         # Add A/B line (diagonal line)
-        x_range = fig.layout.xaxis.range or [self.df[x_col].min(), self.df[x_col].max()]
-        y_range = fig.layout.yaxis.range or [self.df[y_col].min(), self.df[y_col].max()]
+        x_range = fig.layout.xaxis.range or [df[x_col].min(), df[x_col].max()]
+        y_range = fig.layout.yaxis.range or [df[y_col].min(), df[y_col].max()]
         overall_min = min(x_range[0], y_range[0])
         overall_max = max(x_range[1], y_range[1])
 
@@ -235,8 +255,8 @@ class CRISPRQCDashApp:
 
         fig.update_layout(
             title="Scatter Plot",
-            xaxis_title=f"Log10p[ {x_col} ]" if self.log_transform else x_col,
-            yaxis_title=f"Log10p[ {y_col} ]" if self.log_transform else y_col,
+            xaxis_title=f"Log10p[ {x_col} ]" if log_transform else x_col,
+            yaxis_title=f"Log10p[ {y_col} ]" if log_transform else y_col,
         )
 
         return fig
@@ -249,9 +269,10 @@ class CRISPRQCDashApp:
                 Input("x-axis-dropdown", "value"),
                 Input("y-axis-dropdown", "value"),
                 Input("gene-dropdown", "value"),
+                Input("log-transform-switch", "value"),
             ],
         )
-        def update_graph(selectedData, x_col, y_col, highlighted_gene):
+        def update_graph(selectedData, x_col, y_col, highlighted_gene, log_transform):
             selection_range = (
                 selectedData["range"]
                 if selectedData and "range" in selectedData
@@ -263,7 +284,12 @@ class CRISPRQCDashApp:
                     point["pointIndex"] for point in selectedData["points"]
                 ]
             fig = self.get_figure(
-                x_col, y_col, selection_range, highlighted_gene, selected_points
+                x_col,
+                y_col,
+                selection_range,
+                highlighted_gene,
+                selected_points,
+                "log" in log_transform,
             )
             return fig
 
@@ -273,19 +299,21 @@ class CRISPRQCDashApp:
                 Input("scatter-plot", "selectedData"),
                 Input("x-axis-dropdown", "value"),
                 Input("y-axis-dropdown", "value"),
+                Input("log-transform-switch", "value"),
             ],
         )
-        def update_table(selecteddata, x_col, y_col):
+        def update_table(selecteddata, x_col, y_col, log_transform):
+            df = self.df_log if "log" in log_transform else self.df_normal
             if selecteddata and "range" in selecteddata:
                 selection_range = selecteddata["range"]
-                filtered_df = self.df[
-                    (self.df[x_col] >= selection_range["x"][0])
-                    & (self.df[x_col] <= selection_range["x"][1])
-                    & (self.df[y_col] >= selection_range["y"][0])
-                    & (self.df[y_col] <= selection_range["y"][1])
+                filtered_df = df[
+                    (df[x_col] >= selection_range["x"][0])
+                    & (df[x_col] <= selection_range["x"][1])
+                    & (df[y_col] >= selection_range["y"][0])
+                    & (df[y_col] <= selection_range["y"][1])
                 ]
                 return filtered_df.to_dict("records")
-            return self.df.to_dict("records")
+            return df.to_dict("records")
 
     def run_server(self, debug=True, port=8050):
         self.app.run_server(debug=debug, port=port)
