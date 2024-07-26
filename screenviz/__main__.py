@@ -1,9 +1,10 @@
 import argparse
-import re
-from screenviz.gene import VisualizeGenes
-from screenviz.sgrna import VisualizeSGRNAs
+
 from screenviz.compare import CompareScreens
+from screenviz.gene import VisualizeGenes
 from screenviz.idea import RunIDEA
+from screenviz.quality_control import quality_control_app_entry
+from screenviz.sgrna import VisualizeSGRNAs
 
 
 def geneviz_parser(subparser):
@@ -303,6 +304,40 @@ def idea_parser(subparser):
     )
 
 
+def quality_control_parser(subparser):
+    parser_quality_control = subparser.add_parser(
+        "qc",
+        help="Visualize quality control metrics interactively on the input data",
+    )
+    parser_quality_control.add_argument(
+        "-i",
+        "--input",
+        help="Input file (this should be a count-matrix from the output of sgcount)",
+        required=True,
+    )
+    parser_quality_control.add_argument(
+        "-p",
+        "--port",
+        help="Port number to run the visualization on (default = 8050)",
+        required=False,
+        default=8050,
+    )
+    parser_quality_control.add_argument(
+        "-s",
+        "--guide-column",
+        help="Column name of sgRNA names (default = 'Guide')",
+        required=False,
+        default="Guide",
+    )
+    parser_quality_control.add_argument(
+        "-g",
+        "--gene-column",
+        help="Column name of gene names (default = 'Gene')",
+        required=False,
+        default="Gene",
+    )
+
+
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     subparser = parser.add_subparsers(dest="subcommand", required=True)
@@ -310,6 +345,7 @@ def get_args() -> argparse.Namespace:
     sgrnaviz_parser(subparser)
     compare_parser(subparser)
     idea_parser(subparser)
+    quality_control_parser(subparser)
     return parser.parse_args()
 
 
@@ -369,6 +405,13 @@ def main_cli():
             up_color=args.up_color,
             down_color=args.down_color,
             term_threshold=args.term_threshold,
+        )
+    elif args.subcommand == "qc":
+        quality_control_app_entry(
+            filename=args.input,
+            port=args.port,
+            guide_column=args.guide_column,
+            gene_column=args.gene_column,
         )
 
 
