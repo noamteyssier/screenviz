@@ -104,7 +104,15 @@ class CRISPRQCDashApp:
                                 dash_table.DataTable(
                                     id="data-table",
                                     columns=[
-                                        {"name": i, "id": i} for i in self.df.columns
+                                        {
+                                            "name": i,
+                                            "id": i,
+                                            "type": "numeric",
+                                            "format": {"specifier": ".4f"},
+                                        }
+                                        if self.df[i].dtype in ["float64", "float32"]
+                                        else {"name": i, "id": i}
+                                        for i in self.df.columns
                                     ],
                                     data=self.df.to_dict("records"),
                                     page_size=20,
@@ -112,6 +120,17 @@ class CRISPRQCDashApp:
                                         "height": "800px",
                                         "overflowY": "auto",
                                     },
+                                    style_header={
+                                        "fontWeight": "bold",
+                                        "textAlign": "center",
+                                    },
+                                    style_cell={"textAlign": "center"},
+                                    style_data_conditional=[
+                                        {
+                                            "if": {"row_index": "odd"},
+                                            "backgroundColor": "rgb(230, 230, 230)",
+                                        }
+                                    ],
                                 )
                             ],
                             style={
@@ -256,9 +275,9 @@ class CRISPRQCDashApp:
                 Input("y-axis-dropdown", "value"),
             ],
         )
-        def update_table(selectedData, x_col, y_col):
-            if selectedData and "range" in selectedData:
-                selection_range = selectedData["range"]
+        def update_table(selecteddata, x_col, y_col):
+            if selecteddata and "range" in selecteddata:
+                selection_range = selecteddata["range"]
                 filtered_df = self.df[
                     (self.df[x_col] >= selection_range["x"][0])
                     & (self.df[x_col] <= selection_range["x"][1])
