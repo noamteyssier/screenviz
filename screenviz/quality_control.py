@@ -169,7 +169,7 @@ class CRISPRQCDashApp:
 
         if highlighted_gene:
             colors = [
-                "in_guide" if gene == highlighted_gene else "out_guide"
+                "selected_gene" if gene == highlighted_gene else "unselected_gene"
                 for gene in df[self.gene_column]
             ]
             df["color_by_gene"] = colors
@@ -180,8 +180,8 @@ class CRISPRQCDashApp:
                 hover_data=[self.guide_column, self.gene_column],
                 color=df["color_by_gene"],
                 color_discrete_map={
-                    "in_guide": self.DEFAULT_HIGHLIGHT_COLOR,
-                    "out_guide": self.DEFAULT_MARKER_COLOR,
+                    "selected_gene": self.DEFAULT_HIGHLIGHT_COLOR,
+                    "unselected_gene": self.DEFAULT_MARKER_COLOR,
                 },
             )
         else:
