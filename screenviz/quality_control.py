@@ -126,11 +126,17 @@ class CRISPRQCDashApp:
         if highlighted_gene:
             fig.update_traces(
                 mode="markers",
+                marker={
+                    "size": 10,
+                    "line": {"width": 1.0, "color": "black"},
+                    "opacity": 0.8,
+                },
             )
         else:
             fig.update_traces(
-                mode="markers",
-                marker={"color": self.DEFAULT_MARKER_COLOR, "size": 10},
+                marker={
+                    "color": self.DEFAULT_MARKER_COLOR,
+                },
             )
 
         fig.update_layout(
