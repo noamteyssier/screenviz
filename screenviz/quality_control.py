@@ -9,6 +9,7 @@ class CRISPRQCDashApp:
     DEFAULT_MARKER_COLOR = "#124559"
     DEFAULT_HIGHLIGHT_COLOR = "#aec3b0"
     SELECT_FILL_COLOR = "#adb5bd"
+    AB_LINE_COLOR = "#ff6b6b"
 
     def __init__(self, filename: str, guide_column: str, gene_column: str):
         self.app = dash.Dash(__name__)
@@ -156,6 +157,23 @@ class CRISPRQCDashApp:
                 fillcolor=self.SELECT_FILL_COLOR,
                 opacity=0.2,
             )
+
+        # Add A/B line (diagonal line)
+        x_range = fig.layout.xaxis.range or [self.df[x_col].min(), self.df[x_col].max()]
+        y_range = fig.layout.yaxis.range or [self.df[y_col].min(), self.df[y_col].max()]
+        overall_min = min(x_range[0], y_range[0])
+        overall_max = max(x_range[1], y_range[1])
+
+        fig.add_trace(
+            {
+                "type": "scatter",
+                "x": [overall_min, overall_max],
+                "y": [overall_min, overall_max],
+                "mode": "lines",
+                "line": {"color": self.AB_LINE_COLOR, "dash": "dash"},
+                "name": "A/B Line",
+            }
+        )
 
         return fig
 
