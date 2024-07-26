@@ -1,4 +1,5 @@
 import dash
+import numpy as np
 import pandas as pd
 import plotly.express as px
 from dash import dash_table, dcc, html
@@ -10,10 +11,16 @@ class CRISPRQCDashApp:
     DEFAULT_HIGHLIGHT_COLOR = "#aec3b0"
     SELECT_FILL_COLOR = "#adb5bd"
     AB_LINE_COLOR = "#ff6b6b"
+    DEFAULT_OPACITY = 0.8
+    SELECTED_OPACITY = 1.0
+    UNSELECTED_OPACITY = 0.25
 
-    def __init__(self, filename: str, guide_column: str, gene_column: str):
+    def __init__(
+        self, filename: str, guide_column: str, gene_column: str, log_transform=True
+    ):
         self.app = dash.Dash(__name__)
         self.df = pd.read_csv(filename, sep="\t")
+
         self.guide_column = guide_column
         self.gene_column = gene_column
         self.sample_columns = [
@@ -21,8 +28,20 @@ class CRISPRQCDashApp:
         ]
         self.gene_list = sorted(self.df[gene_column].unique())
 
+        # Log-transform the data
+        if log_transform:
+            self.df[self.sample_columns] = self.log_transform(
+                self.df[self.sample_columns]
+            )
+        self.log_transform = log_transform
+
         self.app.layout = self.create_layout()
         self.register_callbacks()
+
+    def log_transform(self, matrix: pd.DataFrame):
+        mat = matrix.values
+        mat = np.clip(a=mat, a_min=0, a_max=None)
+        return np.log10(mat + 1)
 
     def create_layout(self):
         return html.Div(
@@ -65,6 +84,14 @@ class CRISPRQCDashApp:
                                     else self.gene_list[0],
                                     placeholder="Select a gene to highlight",
                                 ),
+                                html.Br(),
+                                html.Label(
+                                    "Scatter Plot:", style={"font-weight": "bold"}
+                                ),
+                                html.Br(),
+                                html.Label(
+                                    "Drag to select points, double click to clear selection"
+                                ),
                                 dcc.Graph(
                                     id="scatter-plot", config={"displayModeBar": False}
                                 ),
@@ -80,9 +107,9 @@ class CRISPRQCDashApp:
                                         {"name": i, "id": i} for i in self.df.columns
                                     ],
                                     data=self.df.to_dict("records"),
-                                    page_size=10,
+                                    page_size=20,
                                     style_table={
-                                        "height": "500px",
+                                        "height": "800px",
                                         "overflowY": "auto",
                                     },
                                 )
@@ -98,7 +125,9 @@ class CRISPRQCDashApp:
             ]
         )
 
-    def get_figure(self, x_col, y_col, selection_range, highlighted_gene):
+    def get_figure(
+        self, x_col, y_col, selection_range, highlighted_gene, selected_points
+    ):
         if highlighted_gene:
             colors = [
                 "in_guide" if gene == highlighted_gene else "out_guide"
@@ -124,13 +153,23 @@ class CRISPRQCDashApp:
                 hover_data=[self.guide_column, self.gene_column],
             )
 
+        if selected_points:
+            opacity_list = [
+                self.SELECTED_OPACITY
+                if i in selected_points
+                else self.UNSELECTED_OPACITY
+                for i in range(len(self.df))
+            ]
+        else:
+            opacity_list = [self.DEFAULT_OPACITY] * len(self.df)
+
         if highlighted_gene:
             fig.update_traces(
                 mode="markers",
                 marker={
                     "size": 10,
                     "line": {"width": 1.0, "color": "black"},
-                    "opacity": 0.8,
+                    "opacity": opacity_list,
                 },
             )
         else:
@@ -175,6 +214,12 @@ class CRISPRQCDashApp:
             }
         )
 
+        fig.update_layout(
+            title="Scatter Plot",
+            xaxis_title=f"Log10p[ {x_col} ]" if self.log_transform else x_col,
+            yaxis_title=f"Log10p[ {y_col} ]" if self.log_transform else y_col,
+        )
+
         return fig
 
     def register_callbacks(self):
@@ -193,7 +238,14 @@ class CRISPRQCDashApp:
                 if selectedData and "range" in selectedData
                 else None
             )
-            fig = self.get_figure(x_col, y_col, selection_range, highlighted_gene)
+            selected_points = []
+            if selectedData and "points" in selectedData:
+                selected_points = [
+                    point["pointIndex"] for point in selectedData["points"]
+                ]
+            fig = self.get_figure(
+                x_col, y_col, selection_range, highlighted_gene, selected_points
+            )
             return fig
 
         @self.app.callback(
