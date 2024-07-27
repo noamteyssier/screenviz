@@ -42,8 +42,14 @@ class CRISPRQCDashApp:
             self.df_log[self.sample_columns]
         )
 
+        # Calculate the correlation matrix
+        self.correlation_matrix = self.calculate_correlation_matrix()
+
         self.app.layout = self.create_layout()
         self.register_callbacks()
+
+    def calculate_correlation_matrix(self):
+        return self.df[self.sample_columns].corr(method="spearman")
 
     def generate_histogram_data(self, selected_sample=None):
         if selected_sample is None or selected_sample == "All Samples":
@@ -85,6 +91,43 @@ class CRISPRQCDashApp:
         )
         return fig
 
+    def create_correlation_heatmap(self):
+        fig = px.imshow(
+            self.correlation_matrix,
+            x=self.sample_columns,
+            y=self.sample_columns,
+            color_continuous_scale="viridis",
+            aspect="auto",
+        )
+        fig.update_layout(
+            title="Sample Correlation Matrix (Spearman)",
+            xaxis_title="Samples",
+            yaxis_title="Samples",
+            height=600,
+            width=800,
+        )
+
+        # Add white borders between cells
+        for i in range(len(self.sample_columns) + 1):
+            fig.add_shape(
+                type="line",
+                x0=i - 0.5,
+                x1=i - 0.5,
+                y0=-0.5,
+                y1=len(self.sample_columns) - 0.5,
+                line=dict(color="white", width=3),
+            )
+            fig.add_shape(
+                type="line",
+                x0=-0.5,
+                x1=len(self.sample_columns) - 0.5,
+                y0=i - 0.5,
+                y1=i - 0.5,
+                line=dict(color="white", width=3),
+            )
+
+        return fig
+
     def log_transform(self, matrix: pd.DataFrame):
         mat = matrix.values
         mat = np.clip(a=mat, a_min=0, a_max=None)
@@ -107,6 +150,8 @@ class CRISPRQCDashApp:
                         self.create_scatter_and_data_card(self.CARD_STYLE),
                         # Second card: Histogram and gene membership table
                         self.create_histogram_and_gene_membership_card(self.CARD_STYLE),
+                        # Third card: Correlation matrix heatmap
+                        self.create_correlation_matrix_card(self.CARD_STYLE),
                     ]
                 ),
             ],
@@ -182,6 +227,30 @@ class CRISPRQCDashApp:
                             },
                         ),
                     ]
+                ),
+            ],
+            className="card",
+            style=card_style,
+        )
+
+    def create_correlation_matrix_card(self, card_style):
+        return html.Div(
+            [
+                html.H3("Sample Correlation Matrix"),
+                dcc.Graph(
+                    id="correlation-heatmap",
+                    figure=self.create_correlation_heatmap(),
+                    config={
+                        "displayModeBar": True,
+                        "modeBarButtonsToRemove": [
+                            "lasso2d",
+                            "autoScale2d",
+                            "hoverClosestCartesian",
+                            "hoverCompareCartesian",
+                            "toggleSpikelines",
+                        ],
+                        "displaylogo": False,
+                    },
                 ),
             ],
             className="card",
