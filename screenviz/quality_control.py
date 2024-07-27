@@ -45,18 +45,25 @@ class CRISPRQCDashApp:
         self.app.layout = self.create_layout()
         self.register_callbacks()
 
-    def generate_histogram_data(self):
-        gene_counts = self.df[self.gene_column].value_counts()
-        sgrna_counts = gene_counts.value_counts().sort_index()
-        return sgrna_counts
+    def generate_histogram_data(self, selected_sample=None):
+        if selected_sample is None or selected_sample == "All Samples":
+            non_zero_counts = (self.df[self.sample_columns] > 0).sum(axis=1)
+        else:
+            non_zero_counts = (self.df[selected_sample] > 0).astype(int)
+
+        mask = non_zero_counts > 0
+        masked_df = self.df[mask]
+        sgrna_counts = masked_df[self.gene_column].value_counts().sort_index()
+        membership_counts = sgrna_counts.value_counts().sort_index()
+        return membership_counts
 
     def generate_gene_membership_data(self):
         gene_counts = self.df[self.gene_column].value_counts().reset_index()
         gene_counts.columns = ["Gene", "Number of sgRNAs"]
         return gene_counts.to_dict("records")
 
-    def create_histogram(self):
-        sgrna_counts = self.generate_histogram_data()
+    def create_histogram(self, selected_sample=None):
+        sgrna_counts = self.generate_histogram_data(selected_sample)
 
         # Calculate the range for y-axis ticks
         y_values = np.log10(sgrna_counts.values + 1)
@@ -65,7 +72,7 @@ class CRISPRQCDashApp:
 
         fig = go.Figure(data=[go.Bar(x=sgrna_counts.index.astype(str), y=y_values)])
         fig.update_layout(
-            title="Distribution of Gene Membership Size",
+            title=f"Distribution of Gene Membership Size ({selected_sample or 'All Samples'})",
             xaxis_title="Number of sgRNAs",
             bargap=0.2,
             yaxis=dict(
@@ -74,7 +81,7 @@ class CRISPRQCDashApp:
                 ticktext=[f"10<sup>{i}</sup>" for i in range(y_min, y_max + 1)],
                 title="Number of Genes",
             ),
-            height=600,  # Set height to 600px to match the data table
+            height=555,  # Set height to 555px to match the data table
         )
         return fig
 
@@ -154,6 +161,7 @@ class CRISPRQCDashApp:
                         # Histogram
                         html.Div(
                             [
+                                self._create_histogram_dropdown(),
                                 self._create_histogram_plot(),
                             ],
                             style={
@@ -178,6 +186,19 @@ class CRISPRQCDashApp:
             ],
             className="card",
             style=card_style,
+        )
+
+    def _create_histogram_dropdown(self):
+        return html.Div(
+            [
+                dcc.Dropdown(
+                    id="histogram-sample-dropdown",
+                    options=[{"label": "All Samples", "value": "All Samples"}]
+                    + [{"label": col, "value": col} for col in self.sample_columns],
+                    value="All Samples",
+                    style={"width": "100%", "marginBottom": "10px"},
+                ),
+            ]
         )
 
     def _create_histogram_plot(self):
@@ -528,6 +549,13 @@ class CRISPRQCDashApp:
             return dcc.send_data_frame(
                 df.to_csv, "exported_data.tsv", sep="\t", index=False
             )
+
+        @self.app.callback(
+            Output("histogram-plot", "figure"),
+            [Input("histogram-sample-dropdown", "value")],
+        )
+        def update_histogram(selected_sample):
+            return self.create_histogram(selected_sample)
 
     def run_server(self, debug=True, port=8050):
         self.app.run_server(debug=debug, port=port)
