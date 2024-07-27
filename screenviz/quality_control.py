@@ -171,14 +171,60 @@ class CRISPRQCDashApp:
                         "marginBottom": "30px",
                     },
                 ),
+                # Add Table of Contents
+                html.Div(
+                    [
+                        html.H2("Table of Contents", style={"color": self.THEME_COLOR}),
+                        html.Ul(
+                            [
+                                html.Li(
+                                    html.A(
+                                        "Scatter Plot and Data Table",
+                                        href="#scatter-and-data",
+                                    )
+                                ),
+                                html.Li(
+                                    html.A(
+                                        "Gene Membership Distribution and Table",
+                                        href="#histogram-and-membership",
+                                    )
+                                ),
+                                html.Li(
+                                    html.A(
+                                        "Sample Correlation Matrix and Read Counts",
+                                        href="#correlation-and-readcounts",
+                                    )
+                                ),
+                            ]
+                        ),
+                    ],
+                    style={"marginBottom": "30px"},
+                ),
                 html.Div(
                     [
                         # First card: Scatter plot and main data table
-                        self.create_scatter_and_data_card(self.CARD_STYLE),
+                        html.Div(
+                            id="scatter-and-data",
+                            children=[
+                                self.create_scatter_and_data_card(self.CARD_STYLE)
+                            ],
+                        ),
                         # Second card: Histogram and gene membership table
-                        self.create_histogram_and_gene_membership_card(self.CARD_STYLE),
+                        html.Div(
+                            id="histogram-and-membership",
+                            children=[
+                                self.create_histogram_and_gene_membership_card(
+                                    self.CARD_STYLE
+                                )
+                            ],
+                        ),
                         # Third card: Correlation matrix heatmap
-                        self.create_correlation_matrix_card(self.CARD_STYLE),
+                        html.Div(
+                            id="correlation-and-readcounts",
+                            children=[
+                                self.create_correlation_matrix_card(self.CARD_STYLE)
+                            ],
+                        ),
                     ]
                 ),
             ],
