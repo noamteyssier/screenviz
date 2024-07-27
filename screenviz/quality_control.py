@@ -42,6 +42,11 @@ class CRISPRQCDashApp:
         sgrna_counts = gene_counts.value_counts().sort_index()
         return sgrna_counts
 
+    def generate_gene_membership_data(self):
+        gene_counts = self.df[self.gene_column].value_counts().reset_index()
+        gene_counts.columns = ["Gene", "Number of sgRNAs"]
+        return gene_counts.to_dict("records")
+
     def create_histogram(self):
         sgrna_counts = self.generate_histogram_data()
 
@@ -205,6 +210,35 @@ class CRISPRQCDashApp:
             )
         )
 
+    def _build_gene_membership_table(self, components: list):
+        components.append(html.Br())
+        components.append(
+            html.Label("Gene Membership Table:", style={"font-weight": "bold"})
+        )
+        components.append(html.Br())
+        components.append(
+            dash_table.DataTable(
+                id="gene-membership-table",
+                columns=[
+                    {"name": "Gene", "id": "Gene"},
+                    {"name": "Number of sgRNAs", "id": "Number of sgRNAs"},
+                ],
+                data=self.generate_gene_membership_data(),
+                page_size=10,
+                style_table={"height": "400px", "overflowY": "auto"},
+                style_header={"fontWeight": "bold", "textAlign": "center"},
+                style_cell={"textAlign": "center"},
+                style_data_conditional=[
+                    {
+                        "if": {"row_index": "odd"},
+                        "backgroundColor": "rgb(230, 230, 230)",
+                    }
+                ],
+                sort_action="native",
+                sort_mode="multi",
+            )
+        )
+
     def _build_left_panel(self, components: list):
         self._add_x_axis_dropdown(components)
         self._add_y_axis_dropdown(components)
@@ -216,6 +250,7 @@ class CRISPRQCDashApp:
     def _build_right_panel(self, components: list):
         self._build_export_button(components)
         self._build_data_table(components)
+        self._build_gene_membership_table(components)
 
     def create_layout(self):
         left_panel_components = []
