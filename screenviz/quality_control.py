@@ -15,6 +15,14 @@ class CRISPRQCDashApp:
     DEFAULT_OPACITY = 0.8
     SELECTED_OPACITY = 1.0
     UNSELECTED_OPACITY = 0.25
+    THEME_COLOR = "#007bff"
+    CARD_STYLE = {
+        "backgroundColor": "#f6f6f6",
+        "borderRadius": "10px",
+        "boxShadow": "0 4px 8px 0 rgba(0,0,0,0.2)",
+        "padding": "20px",
+        "margin": "20px 0",
+    }
 
     def __init__(self, filename: str, guide_column: str, gene_column: str):
         self.app = dash.Dash(__name__)
@@ -77,19 +85,27 @@ class CRISPRQCDashApp:
     def create_layout(self):
         return html.Div(
             [
-                html.H1("CRISPR Screen Quality Control Visualization Suite"),
+                html.H1(
+                    "CRISPR Screen Quality Control Visualization Suite",
+                    style={
+                        "textAlign": "center",
+                        "color": self.THEME_COLOR,
+                        "marginBottom": "30px",
+                    },
+                ),
                 html.Div(
                     [
                         # First card: Scatter plot and main data table
-                        self.create_scatter_and_data_card(),
+                        self.create_scatter_and_data_card(self.CARD_STYLE),
                         # Second card: Histogram and gene membership table
-                        self.create_histogram_and_gene_membership_card(),
+                        self.create_histogram_and_gene_membership_card(self.CARD_STYLE),
                     ]
                 ),
-            ]
+            ],
+            style={"fontFamily": "Arial, sans-serif", "padding": "20px"},
         )
 
-    def create_scatter_and_data_card(self):
+    def create_scatter_and_data_card(self, card_style):
         return html.Div(
             [
                 html.H3("Scatter Plot and Data Table"),
@@ -125,9 +141,10 @@ class CRISPRQCDashApp:
                 ),
             ],
             className="card",
+            style=card_style,
         )
 
-    def create_histogram_and_gene_membership_card(self):
+    def create_histogram_and_gene_membership_card(self, card_style):
         return html.Div(
             [
                 html.H3("Gene Membership Distribution and Table"),
@@ -159,6 +176,7 @@ class CRISPRQCDashApp:
                 ),
             ],
             className="card",
+            style=card_style,
         )
 
     def _create_histogram_plot(self):
