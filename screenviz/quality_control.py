@@ -2,6 +2,7 @@ import dash
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from dash import dash_table, dcc, html
 from dash.dependencies import Input, Output, State
 
@@ -35,6 +36,33 @@ class CRISPRQCDashApp:
 
         self.app.layout = self.create_layout()
         self.register_callbacks()
+
+    def generate_histogram_data(self):
+        gene_counts = self.df[self.gene_column].value_counts()
+        sgrna_counts = gene_counts.value_counts().sort_index()
+        return sgrna_counts
+
+    def create_histogram(self):
+        sgrna_counts = self.generate_histogram_data()
+
+        # Calculate the range for y-axis ticks
+        y_values = np.log10(sgrna_counts.values + 1)
+        y_min = int(np.floor(min(y_values)))
+        y_max = int(np.ceil(max(y_values)))
+
+        fig = go.Figure(data=[go.Bar(x=sgrna_counts.index.astype(str), y=y_values)])
+        fig.update_layout(
+            title="Distribution of Gene Membership Size",
+            xaxis_title="Number of sgRNAs",
+            bargap=0.2,
+            yaxis=dict(
+                tickmode="array",
+                tickvals=list(range(y_min, y_max + 1)),
+                ticktext=[f"10<sup>{i}</sup>" for i in range(y_min, y_max + 1)],
+                title="Number of Genes",
+            ),
+        )
+        return fig
 
     def log_transform(self, matrix: pd.DataFrame):
         mat = matrix.values
@@ -151,12 +179,39 @@ class CRISPRQCDashApp:
             )
         )
 
+    def _build_histogram(self, components: list):
+        components.append(html.Br())
+        components.append(
+            html.Label(
+                "Non-Zero Gene Membership Distribution:", style={"font-weight": "bold"}
+            )
+        )
+        components.append(html.Br())
+        components.append(
+            dcc.Graph(
+                id="histogram-plot",
+                figure=self.create_histogram(),
+                config={
+                    "displayModeBar": True,
+                    "modeBarButtonsToRemove": [
+                        "lasso2d",
+                        "autoScale2d",
+                        "hoverClosestCartesian",
+                        "hoverCompareCartesian",
+                        "toggleSpikelines",
+                    ],
+                    "displaylogo": False,
+                },
+            )
+        )
+
     def _build_left_panel(self, components: list):
         self._add_x_axis_dropdown(components)
         self._add_y_axis_dropdown(components)
         self._build_gene_dropdown(components)
         self._build_log_transform_switch(components)
         self._build_scatter_plot(components)
+        self._build_histogram(components)
 
     def _build_right_panel(self, components: list):
         self._build_export_button(components)
