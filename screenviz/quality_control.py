@@ -74,214 +74,241 @@ class CRISPRQCDashApp:
         mat = np.clip(a=mat, a_min=0, a_max=None)
         return np.log10(mat + 1)
 
-    def _add_x_axis_dropdown(self, components: list):
-        title = html.Label("Select X-axis Sample:")
-        dropdown = dcc.Dropdown(
-            id="x-axis-dropdown",
-            options=[{"label": col, "value": col} for col in self.sample_columns],
-            value=self.sample_columns[0],
-        )
-        components.extend([title, dropdown])
-
-    def _add_y_axis_dropdown(self, components: list):
-        title = html.Label("Select Y-axis Sample:")
-        dropdown = dcc.Dropdown(
-            id="y-axis-dropdown",
-            options=[{"label": col, "value": col} for col in self.sample_columns],
-            value=self.sample_columns[1]
-            if len(self.sample_columns) > 1
-            else self.sample_columns[0],
-        )
-        components.append(html.Br())
-        components.extend([title, dropdown])
-
-    def _build_gene_dropdown(self, components: list):
-        title = html.Label("Highlight Gene:")
-        dropdown = dcc.Dropdown(
-            id="gene-dropdown",
-            options=[{"label": gene, "value": gene} for gene in self.gene_list],
-            value="non-targeting"
-            if "non-targeting" in self.gene_list
-            else self.gene_list[0],
-            placeholder="Select a gene to highlight",
-        )
-        components.append(html.Br())
-        components.extend([title, dropdown])
-
-    def _build_log_transform_switch(self, components: list):
-        switch = dcc.Checklist(
-            id="log-transform-switch",
-            options=[{"label": "", "value": "log"}],
-            value=["log"],
-            style={
-                "display": "inline-block",
-                "margin-left": "10px",
-            },
-        )
-        components.append(html.Br())
-        components.append(switch)
-        components.append(
-            html.Label("Log10-transform counts", style={"display": "inline"})
-        )
-        components.append(html.Br())
-
-    def _build_scatter_plot(self, components: list):
-        components.append(html.Br())
-        components.append(html.Label("Scatter Plot:", style={"font-weight": "bold"}))
-        components.append(html.Br())
-        components.append(
-            html.Label("Drag to select points, double click to clear selection")
-        )
-        components.append(
-            dcc.Graph(
-                id="scatter-plot",
-                config={
-                    "displayModeBar": True,
-                    "modeBarButtonsToRemove": [
-                        "lasso2d",
-                        "autoScale2d",
-                        "hoverClosestCartesian",
-                        "hoverCompareCartesian",
-                        "toggleSpikelines",
-                    ],
-                    "displaylogo": False,
-                },
-            )
-        )
-
-    def _build_export_button(self, components: list):
-        button = html.Button("Export TSV", id="export-button")
-        components.append(button)
-        components.append(dcc.Download(id="download-dataframe-tsv"))
-
-    def _build_data_table(self, components: list):
-        components.append(html.Br())
-        components.append(
-            dash_table.DataTable(
-                id="data-table",
-                columns=[
-                    {
-                        "name": i,
-                        "id": i,
-                        "type": "numeric",
-                        "format": {"specifier": ".4f"},
-                    }
-                    if self.df[i].dtype in ["float64", "float32"]
-                    else {"name": i, "id": i}
-                    for i in self.df.columns
-                ],
-                data=self.df.to_dict("records"),
-                page_size=20,
-                style_table={"height": "800px", "overflowY": "auto"},
-                style_header={"fontWeight": "bold", "textAlign": "center"},
-                style_cell={"textAlign": "center"},
-                style_data_conditional=[
-                    {
-                        "if": {"row_index": "odd"},
-                        "backgroundColor": "rgb(230, 230, 230)",
-                    }
-                ],
-            )
-        )
-
-    def _build_histogram(self, components: list):
-        components.append(html.Br())
-        components.append(
-            html.Label(
-                "Non-Zero Gene Membership Distribution:", style={"font-weight": "bold"}
-            )
-        )
-        components.append(html.Br())
-        components.append(
-            dcc.Graph(
-                id="histogram-plot",
-                figure=self.create_histogram(),
-                config={
-                    "displayModeBar": True,
-                    "modeBarButtonsToRemove": [
-                        "lasso2d",
-                        "autoScale2d",
-                        "hoverClosestCartesian",
-                        "hoverCompareCartesian",
-                        "toggleSpikelines",
-                    ],
-                    "displaylogo": False,
-                },
-            )
-        )
-
-    def _build_gene_membership_table(self, components: list):
-        components.append(html.Br())
-        components.append(
-            html.Label("Gene Membership Table:", style={"font-weight": "bold"})
-        )
-        components.append(html.Br())
-        components.append(
-            dash_table.DataTable(
-                id="gene-membership-table",
-                columns=[
-                    {"name": "Gene", "id": "Gene"},
-                    {"name": "Number of sgRNAs", "id": "Number of sgRNAs"},
-                ],
-                data=self.generate_gene_membership_data(),
-                page_size=10,
-                style_table={"height": "400px", "overflowY": "auto"},
-                style_header={"fontWeight": "bold", "textAlign": "center"},
-                style_cell={"textAlign": "center"},
-                style_data_conditional=[
-                    {
-                        "if": {"row_index": "odd"},
-                        "backgroundColor": "rgb(230, 230, 230)",
-                    }
-                ],
-                sort_action="native",
-                sort_mode="multi",
-            )
-        )
-
-    def _build_left_panel(self, components: list):
-        self._add_x_axis_dropdown(components)
-        self._add_y_axis_dropdown(components)
-        self._build_gene_dropdown(components)
-        self._build_log_transform_switch(components)
-        self._build_scatter_plot(components)
-        self._build_histogram(components)
-
-    def _build_right_panel(self, components: list):
-        self._build_export_button(components)
-        self._build_data_table(components)
-        self._build_gene_membership_table(components)
-
     def create_layout(self):
-        left_panel_components = []
-        right_panel_components = []
-
-        # Left panel components
-        self._build_left_panel(left_panel_components)
-
-        # Right panel components
-        self._build_right_panel(right_panel_components)
-
         return html.Div(
             [
                 html.H1("CRISPR Screen Quality Control Visualization Suite"),
                 html.Div(
                     [
-                        # Left panel: Scatter plot and controls
+                        # First card: Scatter plot and main data table
+                        self.create_scatter_and_data_card(),
+                        # Second card: Histogram and gene membership table
+                        self.create_histogram_and_gene_membership_card(),
+                    ]
+                ),
+            ]
+        )
+
+    def create_scatter_and_data_card(self):
+        return html.Div(
+            [
+                html.H3("Scatter Plot and Data Table"),
+                html.Div(
+                    [
+                        # Scatter plot
                         html.Div(
-                            left_panel_components,
-                            style={"width": "48%", "display": "inline-block"},
-                        ),
-                        # Right panel: Data table
-                        html.Div(
-                            right_panel_components,
+                            [
+                                self._create_axis_dropdown("x"),
+                                self._create_axis_dropdown("y"),
+                                self._create_gene_dropdown(),
+                                self._create_log_transform_switch(),
+                                self._create_scatter_plot(),
+                            ],
                             style={
-                                "width": "48%",
-                                "float": "right",
+                                "width": "50%",
                                 "display": "inline-block",
+                                "vertical-align": "top",
+                            },
+                        ),
+                        # Data table
+                        html.Div(
+                            [
+                                self._create_scatter_plot_data_table(),
+                            ],
+                            style={
+                                "width": "50%",
+                                "display": "inline-block",
+                                "vertical-align": "top",
                             },
                         ),
                     ]
+                ),
+            ],
+            className="card",
+        )
+
+    def create_histogram_and_gene_membership_card(self):
+        return html.Div(
+            [
+                html.H3("Gene Membership Distribution and Table"),
+                html.Div(
+                    [
+                        # Histogram
+                        html.Div(
+                            [
+                                self._create_histogram_plot(),
+                            ],
+                            style={
+                                "width": "50%",
+                                "display": "inline-block",
+                                "vertical-align": "top",
+                            },
+                        ),
+                        # Gene membership table
+                        html.Div(
+                            [
+                                self._create_gene_membership_table(),
+                            ],
+                            style={
+                                "width": "50%",
+                                "display": "inline-block",
+                                "vertical-align": "top",
+                            },
+                        ),
+                    ]
+                ),
+            ],
+            className="card",
+        )
+
+    def _create_histogram_plot(self):
+        return dcc.Graph(
+            id="histogram-plot",
+            figure=self.create_histogram(),
+            config={
+                "displayModeBar": True,
+                "modeBarButtonsToRemove": [
+                    "lasso2d",
+                    "autoScale2d",
+                    "hoverClosestCartesian",
+                    "hoverCompareCartesian",
+                    "toggleSpikelines",
+                ],
+                "displaylogo": False,
+            },
+        )
+
+    def _create_gene_membership_table(self):
+        return dash_table.DataTable(
+            id="gene-membership-table",
+            columns=[
+                {"name": "Gene", "id": "Gene"},
+                {"name": "Number of sgRNAs", "id": "Number of sgRNAs"},
+            ],
+            data=self.generate_gene_membership_data(),
+            page_size=20,
+            style_table={
+                "height": "600px",
+                "overflowY": "auto",
+            },
+            style_header={
+                "fontWeight": "bold",
+                "textAlign": "center",
+            },
+            style_cell={"textAlign": "center"},
+            style_data_conditional=[
+                {
+                    "if": {"row_index": "odd"},
+                    "backgroundColor": "rgb(230, 230, 230)",
+                }
+            ],
+            sort_action="native",
+            sort_mode="multi",
+        )
+
+    def _create_axis_dropdown(self, axis):
+        return html.Div(
+            [
+                html.Label(f"Select {axis.upper()}-axis Sample:"),
+                dcc.Dropdown(
+                    id=f"{axis}-axis-dropdown",
+                    options=[
+                        {"label": col, "value": col} for col in self.sample_columns
+                    ],
+                    value=self.sample_columns[0]
+                    if axis == "x"
+                    else self.sample_columns[1]
+                    if len(self.sample_columns) > 1
+                    else self.sample_columns[0],
+                ),
+            ],
+            style={"margin-bottom": "10px"},
+        )
+
+    def _create_gene_dropdown(self):
+        return html.Div(
+            [
+                html.Label("Highlight Gene:"),
+                dcc.Dropdown(
+                    id="gene-dropdown",
+                    options=[{"label": gene, "value": gene} for gene in self.gene_list],
+                    value="non-targeting"
+                    if "non-targeting" in self.gene_list
+                    else self.gene_list[0],
+                    placeholder="Select a gene to highlight",
+                ),
+            ],
+            style={"margin-bottom": "10px"},
+        )
+
+    def _create_log_transform_switch(self):
+        return html.Div(
+            [
+                dcc.Checklist(
+                    id="log-transform-switch",
+                    options=[{"label": "Log10-transform counts", "value": "log"}],
+                    value=["log"],
+                    style={"display": "inline-block", "margin-left": "10px"},
+                ),
+            ],
+            style={"margin-bottom": "10px"},
+        )
+
+    def _create_scatter_plot(self):
+        return html.Div(
+            [
+                dcc.Graph(
+                    id="scatter-plot",
+                    config={
+                        "displayModeBar": True,
+                        "modeBarButtonsToRemove": [
+                            "lasso2d",
+                            "autoScale2d",
+                            "hoverClosestCartesian",
+                            "hoverCompareCartesian",
+                            "toggleSpikelines",
+                        ],
+                        "displaylogo": False,
+                    },
+                ),
+            ]
+        )
+
+    def _create_scatter_plot_data_table(self):
+        return html.Div(
+            [
+                html.Button("Export TSV", id="export-button"),
+                dcc.Download(id="download-dataframe-tsv"),
+                dash_table.DataTable(
+                    id="data-table",
+                    columns=[
+                        {
+                            "name": i,
+                            "id": i,
+                            "type": "numeric",
+                            "format": {"specifier": ".4f"},
+                        }
+                        if self.df[i].dtype in ["float64", "float32"]
+                        else {"name": i, "id": i}
+                        for i in self.df.columns
+                    ],
+                    data=self.df.to_dict("records"),
+                    page_size=20,
+                    style_table={
+                        "height": "600px",
+                        "overflowY": "auto",
+                    },
+                    style_header={
+                        "fontWeight": "bold",
+                        "textAlign": "center",
+                    },
+                    style_cell={"textAlign": "center"},
+                    style_data_conditional=[
+                        {
+                            "if": {"row_index": "odd"},
+                            "backgroundColor": "rgb(230, 230, 230)",
+                        }
+                    ],
                 ),
             ]
         )
