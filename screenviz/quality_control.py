@@ -333,9 +333,9 @@ class CRISPRQCDashApp:
                         for i in self.df.columns
                     ],
                     data=self.df.to_dict("records"),
-                    page_size=20,
+                    page_size=21,
                     style_table={
-                        "height": "600px",
+                        "height": "750px",
                         "overflowY": "auto",
                     },
                     style_header={
