@@ -45,6 +45,9 @@ class CRISPRQCDashApp:
         # Calculate the correlation matrix
         self.correlation_matrix = self.calculate_correlation_matrix()
 
+        # Calculate total read counts for each sample
+        self.total_read_counts = self.df_normal[self.sample_columns].sum()
+
         self.app.layout = self.create_layout()
         self.register_callbacks()
 
@@ -125,6 +128,30 @@ class CRISPRQCDashApp:
                 y1=i - 0.5,
                 line=dict(color="white", width=3),
             )
+
+        return fig
+
+    def create_read_count_barplot(self):
+        log10_counts = np.log10(self.total_read_counts)
+
+        fig = go.Figure(
+            data=[
+                go.Bar(
+                    x=self.sample_columns,
+                    y=log10_counts,
+                    text=self.total_read_counts.apply(lambda x: f"{x:,}"),
+                    textposition="auto",
+                )
+            ]
+        )
+
+        fig.update_layout(
+            title="Total Read Counts per Sample",
+            xaxis_title="Samples",
+            yaxis_title="Log10[ Total Reads ]",
+            height=600,
+            width=800,
+        )
 
         return fig
 
@@ -236,21 +263,58 @@ class CRISPRQCDashApp:
     def create_correlation_matrix_card(self, card_style):
         return html.Div(
             [
-                html.H3("Sample Correlation Matrix"),
-                dcc.Graph(
-                    id="correlation-heatmap",
-                    figure=self.create_correlation_heatmap(),
-                    config={
-                        "displayModeBar": True,
-                        "modeBarButtonsToRemove": [
-                            "lasso2d",
-                            "autoScale2d",
-                            "hoverClosestCartesian",
-                            "hoverCompareCartesian",
-                            "toggleSpikelines",
-                        ],
-                        "displaylogo": False,
-                    },
+                html.H3("Sample Correlation Matrix and Read Counts"),
+                html.Div(
+                    [
+                        html.Div(
+                            [
+                                dcc.Graph(
+                                    id="correlation-heatmap",
+                                    figure=self.create_correlation_heatmap(),
+                                    config={
+                                        "displayModeBar": True,
+                                        "modeBarButtonsToRemove": [
+                                            "lasso2d",
+                                            "autoScale2d",
+                                            "hoverClosestCartesian",
+                                            "hoverCompareCartesian",
+                                            "toggleSpikelines",
+                                        ],
+                                        "displaylogo": False,
+                                    },
+                                ),
+                            ],
+                            style={
+                                "width": "50%",
+                                "display": "inline-block",
+                                "vertical-align": "top",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.Graph(
+                                    id="read-count-barplot",
+                                    figure=self.create_read_count_barplot(),
+                                    config={
+                                        "displayModeBar": True,
+                                        "modeBarButtonsToRemove": [
+                                            "lasso2d",
+                                            "autoScale2d",
+                                            "hoverClosestCartesian",
+                                            "hoverCompareCartesian",
+                                            "toggleSpikelines",
+                                        ],
+                                        "displaylogo": False,
+                                    },
+                                ),
+                            ],
+                            style={
+                                "width": "50%",
+                                "display": "inline-block",
+                                "vertical-align": "top",
+                            },
+                        ),
+                    ]
                 ),
             ],
             className="card",
