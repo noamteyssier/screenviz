@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 from dash import dash_table, dcc, html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 
 
 class CRISPRQCDashApp:
@@ -105,7 +105,18 @@ class CRISPRQCDashApp:
                                     "Drag to select points, double click to clear selection"
                                 ),
                                 dcc.Graph(
-                                    id="scatter-plot", config={"displayModeBar": False}
+                                    id="scatter-plot",
+                                    config={
+                                        "displayModeBar": True,
+                                        "modeBarButtonsToRemove": [
+                                            "lasso2d",
+                                            "autoScale2d",
+                                            "hoverClosestCartesian",
+                                            "hoverCompareCartesian",
+                                            "toggleSpikelines",
+                                        ],
+                                        "displaylogo": False,
+                                    },
                                 ),
                             ],
                             style={"width": "48%", "display": "inline-block"},
@@ -164,6 +175,7 @@ class CRISPRQCDashApp:
         highlighted_gene,
         selected_points,
         log_transform,
+        current_layout=None,
     ):
         df = self.df_log if log_transform else self.df_normal
 
@@ -253,11 +265,27 @@ class CRISPRQCDashApp:
             }
         )
 
-        fig.update_layout(
-            title="Scatter Plot",
-            xaxis_title=f"Log10p[ {x_col} ]" if log_transform else x_col,
-            yaxis_title=f"Log10p[ {y_col} ]" if log_transform else y_col,
-        )
+        new_layout = {
+            "title": "Scatter Plot",
+            "xaxis_title": f"Log10p[ {x_col} ]" if log_transform else x_col,
+            "yaxis_title": f"Log10p[ {y_col} ]" if log_transform else y_col,
+        }
+
+        if current_layout:
+            new_layout.update(
+                {
+                    "xaxis": {
+                        "range": current_layout["xaxis"]["range"],
+                        "autorange": current_layout["xaxis"]["autorange"],
+                    },
+                    "yaxis": {
+                        "range": current_layout["yaxis"]["range"],
+                        "autorange": current_layout["yaxis"]["autorange"],
+                    },
+                }
+            )
+
+        fig.update_layout(new_layout)
 
         return fig
 
@@ -271,8 +299,11 @@ class CRISPRQCDashApp:
                 Input("gene-dropdown", "value"),
                 Input("log-transform-switch", "value"),
             ],
+            [State("scatter-plot", "figure")],
         )
-        def update_graph(selectedData, x_col, y_col, highlighted_gene, log_transform):
+        def update_graph(
+            selectedData, x_col, y_col, highlighted_gene, log_transform, current_figure
+        ):
             selection_range = (
                 selectedData["range"]
                 if selectedData and "range" in selectedData
@@ -283,6 +314,9 @@ class CRISPRQCDashApp:
                 selected_points = [
                     point["pointIndex"] for point in selectedData["points"]
                 ]
+
+            current_layout = current_figure["layout"] if current_figure else None
+
             fig = self.get_figure(
                 x_col,
                 y_col,
@@ -290,6 +324,7 @@ class CRISPRQCDashApp:
                 highlighted_gene,
                 selected_points,
                 "log" in log_transform,
+                current_layout,
             )
             return fig
 
