@@ -7,8 +7,8 @@ from dash.dependencies import Input, Output
 
 
 class CRISPRQCDashApp:
-    DEFAULT_MARKER_COLOR = "#124559"
-    DEFAULT_HIGHLIGHT_COLOR = "#aec3b0"
+    DEFAULT_MARKER_COLOR = "#ABABAB"
+    DEFAULT_HIGHLIGHT_COLOR = "#F68E5F"
     SELECT_FILL_COLOR = "#adb5bd"
     AB_LINE_COLOR = "#ff6b6b"
     DEFAULT_OPACITY = 0.8
@@ -178,7 +178,7 @@ class CRISPRQCDashApp:
                 x=x_col,
                 y=y_col,
                 hover_data=[self.guide_column, self.gene_column],
-                color=df["color_by_gene"],
+                color="color_by_gene",
                 color_discrete_map={
                     "selected_gene": self.DEFAULT_HIGHLIGHT_COLOR,
                     "unselected_gene": self.DEFAULT_MARKER_COLOR,
