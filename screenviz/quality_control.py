@@ -74,6 +74,7 @@ class CRISPRQCDashApp:
                 ticktext=[f"10<sup>{i}</sup>" for i in range(y_min, y_max + 1)],
                 title="Number of Genes",
             ),
+            height=600,  # Set height to 600px to match the data table
         )
         return fig
 
