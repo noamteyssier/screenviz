@@ -1,5 +1,7 @@
 # screenviz.qc.scatter_data_card
 
+import warnings
+
 import dash
 import pandas as pd
 import plotly.express as px
@@ -169,22 +171,27 @@ class ScatterDataCard:
         df = self.parent.df_log if log_transform else self.parent.df_normal
 
         if highlighted_gene:
-            colors = [
-                "selected_gene" if gene == highlighted_gene else "unselected_gene"
-                for gene in df[self.parent.gene_column]
-            ]
-            df["color_by_gene"] = colors
-            fig = px.scatter(
-                df,
-                x=x_col,
-                y=y_col,
-                hover_data=[self.parent.guide_column, self.parent.gene_column],
-                color="color_by_gene",
-                color_discrete_map={
-                    "selected_gene": self.parent.DEFAULT_HIGHLIGHT_COLOR,
-                    "unselected_gene": self.parent.DEFAULT_MARKER_COLOR,
-                },
+            df["color_by_gene"] = df[self.parent.gene_column].map(
+                lambda x: "selected_gene"
+                if x == highlighted_gene
+                else "unselected_gene"
             )
+            # Suppress warning about get_group() deprecation
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore", category=FutureWarning, module="plotly.express._core"
+                )
+                fig = px.scatter(
+                    df,
+                    x=x_col,
+                    y=y_col,
+                    hover_data=[self.parent.guide_column, self.parent.gene_column],
+                    color="color_by_gene",
+                    color_discrete_map={
+                        "selected_gene": self.parent.DEFAULT_HIGHLIGHT_COLOR,
+                        "unselected_gene": self.parent.DEFAULT_MARKER_COLOR,
+                    },
+                )
         else:
             fig = px.scatter(
                 df,
