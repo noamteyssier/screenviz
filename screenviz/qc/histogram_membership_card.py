@@ -1,3 +1,5 @@
+# screenviz.qc.histogram_membership_card
+
 import numpy as np
 import plotly.graph_objects as go
 from dash import dash_table, dcc, html

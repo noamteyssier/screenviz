@@ -1,3 +1,5 @@
+# screenviz.__main__
+
 import argparse
 
 from screenviz.compare import CompareScreens

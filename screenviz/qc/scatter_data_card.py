@@ -1,3 +1,5 @@
+# screenviz.qc.scatter_data_card
+
 import dash
 import pandas as pd
 import plotly.express as px
