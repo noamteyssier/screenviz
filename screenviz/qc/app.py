@@ -5,6 +5,7 @@ from dash import html
 
 from .correlation_matrix_card import CorrelationMatrixCard
 from .histogram_membership_card import HistogramMembershipCard
+from .kde_histogram_card import KDEHistogramCard
 from .scatter_data_card import ScatterDataCard
 from .utils import calculate_correlation_matrix, load_data
 
@@ -41,6 +42,7 @@ class CRISPRQCDashApp:
         self.scatter_data_card = ScatterDataCard(self)
         self.histogram_membership_card = HistogramMembershipCard(self)
         self.correlation_matrix_card = CorrelationMatrixCard(self)
+        self.kde_histogram_card = KDEHistogramCard(self)
 
         self.app.layout = self.create_layout()
         self.register_callbacks()
@@ -63,6 +65,12 @@ class CRISPRQCDashApp:
                             id="scatter-and-data",
                             children=[
                                 self.scatter_data_card.create_card(self.CARD_STYLE)
+                            ],
+                        ),
+                        html.Div(
+                            id="kde-histogram",
+                            children=[
+                                self.kde_histogram_card.create_card(self.CARD_STYLE)
                             ],
                         ),
                         html.Div(
@@ -101,6 +109,12 @@ class CRISPRQCDashApp:
                         ),
                         html.Li(
                             html.A(
+                                "sgRNA Count Distribution",
+                                href="#kde-histogram",
+                            )
+                        ),
+                        html.Li(
+                            html.A(
                                 "Gene Membership Distribution and Table",
                                 href="#histogram-and-membership",
                             )
@@ -121,6 +135,7 @@ class CRISPRQCDashApp:
         self.scatter_data_card.register_callbacks(self.app)
         self.histogram_membership_card.register_callbacks(self.app)
         self.correlation_matrix_card.register_callbacks(self.app)
+        self.kde_histogram_card.register_callbacks(self.app)
 
     def run_server(self, debug=True, port=8050):
         self.app.run_server(debug=debug, port=port)
