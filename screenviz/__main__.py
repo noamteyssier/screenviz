@@ -3,7 +3,7 @@ import argparse
 from screenviz.compare import CompareScreens
 from screenviz.gene import VisualizeGenes
 from screenviz.idea import RunIDEA
-from screenviz.quality_control import quality_control_app_entry
+from screenviz.qc import quality_control_app_entry
 from screenviz.sgrna import VisualizeSGRNAs
 
 
