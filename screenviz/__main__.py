@@ -6,6 +6,7 @@ from screenviz.compare import CompareScreens
 from screenviz.gene import VisualizeGenes
 from screenviz.idea import RunIDEA
 from screenviz.qc import quality_control_app_entry
+from screenviz.results import results_app_entry
 from screenviz.sgrna import VisualizeSGRNAs
 
 
@@ -340,6 +341,25 @@ def quality_control_parser(subparser):
     )
 
 
+def results_parser(subparser):
+    parser_results = subparser.add_parser(
+        "results", help="Visualize CRISPR screen results interactively"
+    )
+    parser_results.add_argument(
+        "-s", "--sgrna-file", help="Input file for sgRNA-level results", required=True
+    )
+    parser_results.add_argument(
+        "-g", "--gene-file", help="Input file for gene-level results", required=True
+    )
+    parser_results.add_argument(
+        "-p",
+        "--port",
+        help="Port number to run the visualization on (default = 8050)",
+        type=int,
+        default=8050,
+    )
+
+
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     subparser = parser.add_subparsers(dest="subcommand", required=True)
@@ -348,6 +368,7 @@ def get_args() -> argparse.Namespace:
     compare_parser(subparser)
     idea_parser(subparser)
     quality_control_parser(subparser)
+    results_parser(subparser)
     return parser.parse_args()
 
 
@@ -414,6 +435,12 @@ def main_cli():
             port=args.port,
             guide_column=args.guide_column,
             gene_column=args.gene_column,
+        )
+    elif args.subcommand == "results":
+        results_app_entry(
+            sgrna_file=args.sgrna_file,
+            gene_file=args.gene_file,
+            port=args.port,
         )
 
 
