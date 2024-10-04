@@ -21,6 +21,12 @@ def results_parser(subparser):
         default="non-targeting",
     )
     parser_results.add_argument(
+        "--amalgam-token",
+        help="Token to identify amalgam genes in the gene file",
+        required=False,
+        default="amalgam",
+    )
+    parser_results.add_argument(
         "-p",
         "--port",
         help="Port number to run the visualization on (default = 8050)",

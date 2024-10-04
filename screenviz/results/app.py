@@ -9,13 +9,17 @@ from .sgrna_card import SGRNACard
 
 class ResultsDashApp:
     def __init__(
-        self, sgrna_file: str, gene_file: str, ntc_token: str = "non-targeting"
+        self,
+        sgrna_file: str,
+        gene_file: str,
+        ntc_token: str = "non-targeting",
+        amalgam_token="amalgam",
     ):
         self.app = dash.Dash(__name__)
 
         # Initialize the cards
         self.sgrna_card = SGRNACard(sgrna_file, ntc_token=ntc_token)
-        self.gene_card = GeneCard(gene_file)
+        self.gene_card = GeneCard(gene_file, amalgam_token=amalgam_token)
         # self.idea_card = IDEACard(idea_file)
 
         self.app.layout = self.create_layout()
