@@ -1,7 +1,6 @@
 # screenviz.results.gene_card
 
 import numpy as np
-import pandas as pd
 import plotly.express as px
 from dash import dash_table, dcc, html
 from dash.dependencies import Input, Output
@@ -13,6 +12,7 @@ from .._constants import (
     NON_TARGETING_COLOR,
     NOT_SIGNIFICANT_COLOR,
 )
+from ._utils import load_gene_dataframe
 
 
 class GeneCard:
@@ -25,23 +25,12 @@ class GeneCard:
         "Amalgam": NON_TARGETING_COLOR,
     }
 
-    def __init__(self, gene_file: str, amalgam_token: str = "amalgam"):
-        self.filename = gene_file
+    def __init__(self, gene_file: str, sgrna_file: str, amalgam_token: str = "amalgam"):
+        self.gene_filename = gene_file
+        self.sgrna_filename = sgrna_file
         self.amalgam_token = amalgam_token
-        self.df = self.load_dataframe(gene_file)
+        self.gene_frame = load_gene_dataframe(gene_file)
         self.layout = self.create_layout()
-
-    def load_dataframe(self, filename):
-        df = pd.read_csv(filename, sep="\t")
-        required_columns = [
-            "gene",
-            self.LFC_COLUMN,
-            self.PVALUE_COLUMN,
-            "fdr",
-        ]
-        for col in required_columns:
-            assert col in df.columns, f"The input file must have a column named {col}"
-        return df
 
     def create_layout(self):
         return html.Div(
@@ -84,8 +73,8 @@ class GeneCard:
                 html.H3("Data Table, Filtered by Threshold"),
                 dash_table.DataTable(
                     id="gene-data-table",
-                    columns=[{"name": i, "id": i} for i in self.df.columns],
-                    data=self.df.to_dict("records"),
+                    columns=[{"name": i, "id": i} for i in self.gene_frame.columns],
+                    data=self.gene_frame.to_dict("records"),
                     page_size=10,
                     sort_action="native",
                     filter_action="native",
@@ -109,7 +98,7 @@ class GeneCard:
             Output("gene-data-table", "data"), [Input("gene-threshold-input", "value")]
         )
         def update_data_table(threshold):
-            filtered_df = self.df[self.df["fdr"] < threshold]
+            filtered_df = self.gene_frame[self.gene_frame["fdr"] < threshold]
             return filtered_df.to_dict("records")
 
     def classify(self, x, lfc):
@@ -123,7 +112,7 @@ class GeneCard:
             return "Not significant"
 
     def create_volcano_plot(self, threshold=0.1, clamp_threshold=30, use_fdr=True):
-        df = self.df.copy()
+        df = self.gene_frame.copy()
         df["log_pvalue"] = -np.log10(df[self.PVALUE_COLUMN])
         df["log_fdr"] = -np.log10(df["fdr"])
         df["clamped_log_pvalue"] = df["log_pvalue"].clip(upper=clamp_threshold)
