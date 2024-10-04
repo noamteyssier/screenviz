@@ -95,6 +95,7 @@ def main_cli():
             sgrna_file=sgrna_file,
             gene_file=gene_file,
             port=port,
+            ntc_token=args.ntc_token,
         )
 
 

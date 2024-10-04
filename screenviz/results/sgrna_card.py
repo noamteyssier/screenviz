@@ -8,17 +8,26 @@ from dash.dependencies import Input, Output
 from dash_daq import ToggleSwitch
 from plotly.subplots import make_subplots
 
+from .._constants import (
+    DEPLETION_COLOR,
+    ENRICHMENT_COLOR,
+    NON_TARGETING_COLOR,
+    NOT_SIGNIFICANT_COLOR,
+)
+
 
 class SGRNACard:
     PVALUE_COLUMN = "pvalue_twosided"
     COLOR_MAP = {
-        "Enriched": "#801a00",
-        "Depleted": "#002966",
-        "Not significant": "#808080",
+        "Enriched": ENRICHMENT_COLOR,
+        "Depleted": DEPLETION_COLOR,
+        "Not significant": NOT_SIGNIFICANT_COLOR,
+        "Non-targeting": NON_TARGETING_COLOR,
     }
 
-    def __init__(self, sgrna_file):
+    def __init__(self, sgrna_file: str, ntc_token: str = "non-targeting"):
         self.filename = sgrna_file
+        self.ntc_token = ntc_token
         self.df = self.load_dataframe(sgrna_file)
         self.layout = self.create_layout()
 
@@ -103,7 +112,9 @@ class SGRNACard:
             return filtered_df.to_dict("records")
 
     def classify(self, x, lfc):
-        if x.is_significant and x[lfc] > 0:
+        if self.ntc_token in x.sgrna:
+            return "Non-targeting"
+        elif x.is_significant and x[lfc] > 0:
             return "Enriched"
         elif x.is_significant and x[lfc] < 0:
             return "Depleted"

@@ -15,6 +15,12 @@ def results_parser(subparser):
         required=False,
     )
     parser_results.add_argument(
+        "--ntc-token",
+        help="Token to identify negative controls in the sgRNA file",
+        required=False,
+        default="non-targeting",
+    )
+    parser_results.add_argument(
         "-p",
         "--port",
         help="Port number to run the visualization on (default = 8050)",
