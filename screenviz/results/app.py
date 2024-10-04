@@ -19,7 +19,9 @@ class ResultsDashApp:
 
         # Initialize the cards
         self.sgrna_card = SGRNACard(sgrna_file, ntc_token=ntc_token)
-        self.gene_card = GeneCard(gene_file, amalgam_token=amalgam_token)
+        self.gene_card = GeneCard(
+            gene_file=gene_file, sgrna_file=sgrna_file, amalgam_token=amalgam_token
+        )
         # self.idea_card = IDEACard(idea_file)
 
         self.app.layout = self.create_layout()

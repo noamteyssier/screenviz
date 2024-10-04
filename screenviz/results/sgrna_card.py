@@ -14,6 +14,7 @@ from .._constants import (
     NON_TARGETING_COLOR,
     NOT_SIGNIFICANT_COLOR,
 )
+from ._utils import load_sgrna_dataframe
 
 
 class SGRNACard:
@@ -28,7 +29,7 @@ class SGRNACard:
     def __init__(self, sgrna_file: str, ntc_token: str = "non-targeting"):
         self.filename = sgrna_file
         self.ntc_token = ntc_token
-        self.df = self.load_dataframe(sgrna_file)
+        self.sgrna_frame = load_sgrna_dataframe(sgrna_file)
         self.layout = self.create_layout()
 
     def load_dataframe(self, filename):
@@ -83,8 +84,8 @@ class SGRNACard:
                 html.H3("Data Table, Filtered by Threshold"),
                 dash_table.DataTable(
                     id="sgrna-data-table",
-                    columns=[{"name": i, "id": i} for i in self.df.columns],
-                    data=self.df.to_dict("records"),
+                    columns=[{"name": i, "id": i} for i in self.sgrna_frame.columns],
+                    data=self.sgrna_frame.to_dict("records"),
                     page_size=10,
                     sort_action="native",
                     filter_action="native",
@@ -108,7 +109,7 @@ class SGRNACard:
             Output("sgrna-data-table", "data"), [Input("threshold-input", "value")]
         )
         def update_data_table(threshold):
-            filtered_df = self.df[self.df["fdr"] < threshold]
+            filtered_df = self.sgrna_frame[self.sgrna_frame["fdr"] < threshold]
             return filtered_df.to_dict("records")
 
     def classify(self, x, lfc):
@@ -122,7 +123,7 @@ class SGRNACard:
             return "Not significant"
 
     def create_plots(self, threshold=0.1, clamp_threshold=30, use_fdr=True):
-        df = self.df.copy()
+        df = self.sgrna_frame.copy()
         df["log_pvalue"] = -np.log10(df[self.PVALUE_COLUMN])
         df["log_fdr"] = -np.log10(df["fdr"])
         df["clamped_log_pvalue"] = df["log_pvalue"].clip(upper=clamp_threshold)
