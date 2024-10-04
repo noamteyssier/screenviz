@@ -1,5 +1,6 @@
 # screenviz.__main__
 
+
 from screenviz.cli import get_args
 from screenviz.compare import CompareScreens
 from screenviz.gene import VisualizeGenes
@@ -7,6 +8,8 @@ from screenviz.idea import RunIDEA
 from screenviz.qc import quality_control_app_entry
 from screenviz.results import results_app_entry
 from screenviz.sgrna import VisualizeSGRNAs
+
+from ._utils import find_free_port
 
 
 def main_cli():
@@ -67,9 +70,10 @@ def main_cli():
             term_threshold=args.term_threshold,
         )
     elif args.subcommand == "qc":
+        port = find_free_port(args.port)
         quality_control_app_entry(
             filename=args.input,
-            port=args.port,
+            port=port,
             guide_column=args.guide_column,
             gene_column=args.gene_column,
         )
@@ -86,10 +90,11 @@ def main_cli():
                     raise ValueError(base_error + " (gene file missing)")
             sgrna_file = args.sgrna_file
             gene_file = args.gene_file
+        port = find_free_port(args.port)
         results_app_entry(
             sgrna_file=sgrna_file,
             gene_file=gene_file,
-            port=args.port,
+            port=port,
         )
 
 
