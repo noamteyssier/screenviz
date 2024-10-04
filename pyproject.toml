@@ -1,6 +1,6 @@
 [project]
 name = "screenviz"
-version = "0.1.3"
+version = "0.2.0"
 description = "A tool to visualize the results of 1D CRISPR screens"
 authors = [{ name = "noam teyssier" }]
 license = { file = "LICENSE" }
