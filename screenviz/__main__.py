@@ -74,9 +74,21 @@ def main_cli():
             gene_column=args.gene_column,
         )
     elif args.subcommand == "results":
+        if args.prefix is not None:
+            sgrna_file = f"{args.prefix}.sgrna_results.tsv"
+            gene_file = f"{args.prefix}.gene_results.tsv"
+        else:
+            if args.sgrna_file is None or args.gene_file is None:
+                base_error = "Must provide either a prefix (-n) or both sgrna (-s) and gene (-g) files"
+                if args.sgrna_file is None:
+                    raise ValueError(base_error + " (sgrna file missing)")
+                if args.gene_file is None:
+                    raise ValueError(base_error + " (gene file missing)")
+            sgrna_file = args.sgrna_file
+            gene_file = args.gene_file
         results_app_entry(
-            sgrna_file=args.sgrna_file,
-            gene_file=args.gene_file,
+            sgrna_file=sgrna_file,
+            gene_file=gene_file,
             port=args.port,
         )
 
