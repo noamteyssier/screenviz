@@ -96,6 +96,7 @@ def main_cli():
             gene_file=gene_file,
             port=port,
             ntc_token=args.ntc_token,
+            amalgam_token=args.amalgam_token,
         )
 
 

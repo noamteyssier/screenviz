@@ -7,18 +7,27 @@ from dash import dash_table, dcc, html
 from dash.dependencies import Input, Output
 from dash_daq import ToggleSwitch
 
+from .._constants import (
+    DEPLETION_COLOR,
+    ENRICHMENT_COLOR,
+    NON_TARGETING_COLOR,
+    NOT_SIGNIFICANT_COLOR,
+)
+
 
 class GeneCard:
     PVALUE_COLUMN = "pvalue"
     LFC_COLUMN = "log2fc"
     COLOR_MAP = {
-        "Enriched": "#801a00",
-        "Depleted": "#002966",
-        "Not significant": "#808080",
+        "Enriched": ENRICHMENT_COLOR,
+        "Depleted": DEPLETION_COLOR,
+        "Not significant": NOT_SIGNIFICANT_COLOR,
+        "Amalgam": NON_TARGETING_COLOR,
     }
 
-    def __init__(self, gene_file):
+    def __init__(self, gene_file: str, amalgam_token: str = "amalgam"):
         self.filename = gene_file
+        self.amalgam_token = amalgam_token
         self.df = self.load_dataframe(gene_file)
         self.layout = self.create_layout()
 
@@ -104,7 +113,9 @@ class GeneCard:
             return filtered_df.to_dict("records")
 
     def classify(self, x, lfc):
-        if x.is_significant and x[lfc] > 0:
+        if self.amalgam_token in x.gene:
+            return "Amalgam"
+        elif x.is_significant and x[lfc] > 0:
             return "Enriched"
         elif x.is_significant and x[lfc] < 0:
             return "Depleted"
