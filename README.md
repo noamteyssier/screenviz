@@ -86,7 +86,7 @@ screenviz sgrna \
 
 ### Comparison
 
-To compare the results of two different analysis methods you can use the `screenviz compare` subcommand 
+To compare the results of two different analysis methods you can use the `screenviz compare` subcommand
 
 ```bash
 screenviz compare \
