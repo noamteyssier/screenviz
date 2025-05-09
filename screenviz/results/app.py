@@ -50,10 +50,10 @@ class ResultsDashApp:
         self.gene_card.register_callbacks(self.app)
         # self.idea_card.register_callbacks(self.app)
 
-    def run_server(self, debug=True, port=8050):
+    def run(self, debug=True, port=8050):
         self.app.run(debug=debug, port=port)
 
 
 def results_app_entry(sgrna_file, gene_file, port=8050):
     app = ResultsDashApp(sgrna_file, gene_file)
-    app.run_server(debug=True, port=port)
+    app.run(debug=True, port=port)

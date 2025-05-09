@@ -137,5 +137,5 @@ class CRISPRQCDashApp:
         self.correlation_matrix_card.register_callbacks(self.app)
         self.kde_histogram_card.register_callbacks(self.app)
 
-    def run_server(self, debug=True, port=8050):
+    def run(self, debug=True, port=8050):
         self.app.run(debug=debug, port=port)

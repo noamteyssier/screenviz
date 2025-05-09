@@ -9,4 +9,4 @@ def results_app_entry(
     app = ResultsDashApp(
         sgrna_file, gene_file, ntc_token=ntc_token, amalgam_token=amalgam_token
     )
-    app.run_server(debug=True, port=port)
+    app.run(debug=True, port=port)

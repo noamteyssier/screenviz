@@ -10,4 +10,4 @@ def quality_control_app_entry(
     gene_column: str,
 ):
     app = CRISPRQCDashApp(filename, guide_column, gene_column)
-    app.run_server(debug=True, port=port)
+    app.run(debug=True, port=port)
