@@ -4,6 +4,15 @@ A CRISPR screen visualization toolkit.
 
 ## Installation
 
+The easiest way to get started with `screenviz` is to use [`uv`](https://docs.astral.sh/uv/)
+
+```bash
+uv tool install screenviz
+screenviz --help
+```
+
+Or if you prefer using just pip
+
 ```bash
 pip install screenviz
 ```
@@ -52,7 +61,7 @@ on your computer. You can open this file in your favorite browser and explore th
 For a better visualization, pass in the `.yaml` configuration file produced from your `crispr_screen` run.
 This will automatically determine if `RRA` or `INC` was used and show appropriate thresholds.
 
-``` bash
+```bash
 screenviz gene -i results.gene_results.tsv -c results.screenviz.yaml
 ```
 
@@ -61,7 +70,7 @@ If your screen result is an output of a different program, you will need to tell
 If your result is from `MAGeCK` you can do the following:
 
 ```bash
-# Left side of the volcano 
+# Left side of the volcano
 screenviz gene \
     -i sample1.gene_summary.txt \
     -g "id" \
@@ -69,7 +78,7 @@ screenviz gene \
     -p "neg|fdr" \
     -t "neg|fdr"
 
-# Right side of the volcano 
+# Right side of the volcano
 screenviz gene \
     -i sample1.gene_summary.txt \
     -g "id" \
