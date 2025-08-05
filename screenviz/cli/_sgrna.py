@@ -28,9 +28,9 @@ def sgrna_parser(subparser):
     parser_sgrna.add_argument(
         "-f",
         "--fc_column",
-        help="Column name of fold change values (default = 'log2_fold_change')",
+        help="Column name of fold change values (default = 'log2fc')",
         required=False,
-        default="log2_fold_change",
+        default="log2fc",
     )
     parser_sgrna.add_argument(
         "-p",

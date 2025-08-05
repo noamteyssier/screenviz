@@ -1,6 +1,7 @@
 # screenviz.sgrna
 
 import sys
+
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -24,7 +25,7 @@ class VisualizeSGRNAs:
         filename: str,
         sgrna_column: str = "sgrna",
         gene_column: str = "gene",
-        fc_column: str = "log2_fold_change",
+        fc_column: str = "log2fc",
         pval_column: str = "pvalue",
         threshold_column: str = "fdr",
         threshold: float = 0.1,
@@ -41,21 +42,21 @@ class VisualizeSGRNAs:
 
     def load_dataframe(self, filename: str) -> pd.DataFrame:
         df = pd.read_csv(self.filename, sep="\t")
-        assert (
-            self.sgrna_column in df.columns
-        ), f"The input file must have a column named {self.sgrna_column}"
-        assert (
-            self.gene_column in df.columns
-        ), f"The input file must have a column named {self.gene_column}"
-        assert (
-            self.fc_column in df.columns
-        ), f"The input file must have a column named {self.fc_column}"
-        assert (
-            self.pval_column in df.columns
-        ), f"The input file must have a column named {self.pval_column}"
-        assert (
-            self.threshold_column in df.columns
-        ), f"The input file must have a column named {self.threshold_column}"
+        assert self.sgrna_column in df.columns, (
+            f"The input file must have a column named {self.sgrna_column}"
+        )
+        assert self.gene_column in df.columns, (
+            f"The input file must have a column named {self.gene_column}"
+        )
+        assert self.fc_column in df.columns, (
+            f"The input file must have a column named {self.fc_column}"
+        )
+        assert self.pval_column in df.columns, (
+            f"The input file must have a column named {self.pval_column}"
+        )
+        assert self.threshold_column in df.columns, (
+            f"The input file must have a column named {self.threshold_column}"
+        )
         return df
 
     def plot_volcano(self, output="volcano.html"):
