@@ -109,18 +109,18 @@ class VisualizeGenes:
 
     def load_dataframe(self, filename: str) -> pd.DataFrame:
         df = pd.read_csv(self.filename, sep="\t")
-        assert (
-            self.gene_column in df.columns
-        ), f"The input file must have a column named {self.gene_column}"
-        assert (
-            self.fc_column in df.columns
-        ), f"The input file must have a column named {self.fc_column}"
-        assert (
-            self.pval_column in df.columns
-        ), f"The input file must have a column named {self.pval_column}"
-        assert (
-            self.threshold_column in df.columns
-        ), f"The input file must have a column named {self.threshold_column}"
+        assert self.gene_column in df.columns, (
+            f"The input file must have a column named {self.gene_column}"
+        )
+        assert self.fc_column in df.columns, (
+            f"The input file must have a column named {self.fc_column}"
+        )
+        assert self.pval_column in df.columns, (
+            f"The input file must have a column named {self.pval_column}"
+        )
+        assert self.threshold_column in df.columns, (
+            f"The input file must have a column named {self.threshold_column}"
+        )
         return df
 
     def add_split_hline(self, fig, xmax):

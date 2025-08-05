@@ -70,15 +70,15 @@ class CompareScreens:
         suffix: str,
     ) -> pd.DataFrame:
         dataframe = pd.read_csv(filename, sep="\t")
-        assert (
-            merge_column in dataframe.columns
-        ), f"Column {merge_column} not found in {filename}"
-        assert (
-            variable_column in dataframe.columns
-        ), f"Column {variable_column} not found in {filename}"
-        assert (
-            threshold_column in dataframe.columns
-        ), f"Column {threshold_column} not found in {filename}"
+        assert merge_column in dataframe.columns, (
+            f"Column {merge_column} not found in {filename}"
+        )
+        assert variable_column in dataframe.columns, (
+            f"Column {variable_column} not found in {filename}"
+        )
+        assert threshold_column in dataframe.columns, (
+            f"Column {threshold_column} not found in {filename}"
+        )
         dataframe = dataframe.loc[
             :, [merge_column, variable_column, threshold_column]
         ].rename(
