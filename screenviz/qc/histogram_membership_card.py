@@ -103,10 +103,20 @@ class HistogramMembershipCard:
 
         # Calculate the range for y-axis ticks
         y_values = np.log10(sgrna_counts.values + 1)
+        y_values_raw = sgrna_counts.values
         y_min = int(np.floor(min(y_values)))
         y_max = int(np.ceil(max(y_values)))
 
-        fig = go.Figure(data=[go.Bar(x=sgrna_counts.index.astype(str), y=y_values)])
+        fig = go.Figure(
+            data=[
+                go.Bar(
+                    x=sgrna_counts.index.astype(str),
+                    y=y_values,
+                    customdata=y_values_raw,
+                    hovertemplate="<b>Number of Genes:</b> %{customdata:.0f}",
+                )
+            ]
+        )
         fig.update_layout(
             title=f"Distribution of Gene Membership Size ({selected_sample or 'All Samples'})",
             xaxis_title="Number of sgRNAs",
